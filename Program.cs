@@ -3,9 +3,12 @@ using VideoMaker.Api;
 using VideoMaker.Api.Endpoint;
 using VideoMaker.Database;
 using VideoMaker.Extensions;
+using VideoMaker.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationContext>(opt => opt.UseInMemoryDatabase("VideoMaker"));
+
+builder.Services.AddSingleton<ThumbnailService>();
 
 builder.Services.AddAntiforgery();
 
