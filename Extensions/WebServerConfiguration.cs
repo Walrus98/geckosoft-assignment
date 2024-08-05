@@ -36,4 +36,14 @@ public static class WebServerConfiguration {
         _ = builder.Services.AddAuthorization();
     }
 
+    public static void AddSwagger(this WebApplicationBuilder builder, Api.Api[] apis) {
+        foreach (var api in apis) {
+            _ = builder.Services.AddEndpointsApiExplorer();
+            _ = builder.Services.AddSwaggerGen((options) => {
+                options.SwaggerDoc(api.Id, new() { Title = api.Id, Version = api.Version });
+            });
+        }
+    }
+
 }
+

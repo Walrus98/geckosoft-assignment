@@ -13,6 +13,7 @@ var apis = new Api[] {
 
 builder.AddIdentity();
 builder.AddJwtAuthentication();
+builder.AddSwagger(apis);
 
 var app = builder.Build();
 
@@ -25,5 +26,14 @@ foreach (var api in apis) {
     api.MapEndpoint(endpoint);
 }
 
+if (builder.Environment.IsDevelopment()) {
+    foreach (var api in apis) {
+        _ = app.UseSwagger();
+        _ = app.UseSwaggerUI(options => {
+            options.SwaggerEndpoint($"{api.Id}/swagger.yaml", api.Id);
+            options.EnablePersistAuthorization();
+        });
+    }
+}
 
 await app.RunAsync();
