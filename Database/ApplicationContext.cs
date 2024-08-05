@@ -15,4 +15,12 @@ public class ApplicationContext : IdentityDbContext<IdentityUser> {
     public ApplicationContext(DbContextOptions<ApplicationContext> options)
         : base(options) {
     }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder) {
+        base.OnModelCreating(modelBuilder);
+
+        _ = modelBuilder.Entity<Video>().HasKey(v => v.Id);
+        _ = modelBuilder.Entity<Thumbnail>().HasKey(t => t.Id);
+        _ = modelBuilder.Entity<Thumbnail>().HasOne<Video>().WithMany().HasForeignKey(t => t.VideoId);
+    }
 }
