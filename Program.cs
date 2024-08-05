@@ -12,6 +12,7 @@ var apis = new Api[] {
 };
 
 builder.AddIdentity();
+builder.AddJwtAuthentication();
 
 var app = builder.Build();
 
