@@ -26,11 +26,13 @@ public static class CreateThumbnail {
             return Results.NotFound();
         }
 
+        // Check if the thumbnail that was requested is already existing
         var existingThumbnail = await applicationContext.Thumbnails.FirstOrDefaultAsync(
             t => t.VideoId == request.VideoId &&
             t.Width == request.Width &&
             t.Height == request.Height, cancellationToken: cancellationToken);
 
+        // If it has already been created, then I return an error message
         if (existingThumbnail != null) {
             return Results.BadRequest("This thumbnail is already sumbitted.");
         }
@@ -39,11 +41,17 @@ public static class CreateThumbnail {
             return Results.BadRequest("Width and height must be positive.");
         }
 
+        // create new GUID for thumbnail entity
         var thumbnailId = Guid.NewGuid();
+
+        // takes the path to the thumbnails folder, if it doesn't exist I create it
         var thumbnailsPath = Path.Combine(Directory.GetCurrentDirectory(), "thumbnails");
         _ = Directory.CreateDirectory(thumbnailsPath);
+
+        // creates the file path for the thumbnail in .jpg format
         var thumbnailPath = Path.Combine("thumbnails", thumbnailId + ".jpg");
 
+        // creates a thumbnail entity for the database and adds it
         var thumbnail = new Thumbnail {
             Id = thumbnailId,
             VideoId = request.VideoId,
@@ -56,6 +64,7 @@ public static class CreateThumbnail {
         _ = await applicationContext.Thumbnails.AddAsync(thumbnail, cancellationToken);
         _ = await applicationContext.SaveChangesAsync(cancellationToken);
 
+        // submits the task of creating a new thumbnail to the thumbnail service
         _ = thumbnailService.SubmitThumbnail(thumbnailId, cancellationToken);
 
         var thumbnailDto = new ThumbnailDto(thumbnail);

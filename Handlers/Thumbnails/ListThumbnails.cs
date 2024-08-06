@@ -12,14 +12,17 @@ public static class ListThumbnails {
             return TypedResults.BadRequest();
         }
 
+        // takes the total number of thumbnail entries
         var totalCount = await applicationContext.Thumbnails.CountAsync();
 
+        // take the required entries and convert them to an array
         var thumbnails = await applicationContext.Thumbnails
             .Skip(offset.Value)
             .Take(limit.Value)
             .Select(x => new ThumbnailDto(x))
             .ToArrayAsync();
 
+        // return the response message as a page
         var response = new Page<ThumbnailDto>(offset.Value, limit.Value, totalCount, thumbnails);
 
         return TypedResults.Ok(response);

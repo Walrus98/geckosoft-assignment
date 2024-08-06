@@ -8,12 +8,14 @@ namespace VideoMaker.Extensions;
 
 public static class WebServerConfiguration {
 
+    // Used to add IdentityUser in ApplicationContext
     public static void AddIdentity(this WebApplicationBuilder builder) {
         _ = builder.Services.AddIdentity<IdentityUser, IdentityRole>()
         .AddEntityFrameworkStores<ApplicationContext>()
         .AddDefaultTokenProviders();
     }
 
+    // Used to enable Json Web Token Authentication Service
     public static void AddJwtAuthentication(this WebApplicationBuilder builder) {
 
         _ = builder.Services.AddAuthentication(options => {
@@ -36,7 +38,7 @@ public static class WebServerConfiguration {
         _ = builder.Services.AddAuthorization();
     }
 
-
+    // Used to enable cross origin for SignalR requests
     public static void AddCorsPolicy(this WebApplicationBuilder builder) {
         _ = builder.Services.AddCors(options => {
             options.AddPolicy("AllowSpecificOrigins",
@@ -49,6 +51,7 @@ public static class WebServerConfiguration {
         });
     }
 
+    // Add Swagger Documentation for Endpoint
     public static void AddSwagger(this WebApplicationBuilder builder, Api.Api[] apis) {
         foreach (var api in apis) {
             _ = builder.Services.AddEndpointsApiExplorer();
