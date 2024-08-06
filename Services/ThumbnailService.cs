@@ -40,7 +40,7 @@ public class ThumbnailService {
             _ = await applicationContext.SaveChangesAsync();
 
             // Is for debugging so you can better see the state change
-            await Task.Delay(5000, stoppingToken);
+            // await Task.Delay(5000, stoppingToken);
 
             _logger.LogInformation("Current status: {Status}", thumbnail!.Status);
             await _hubContext.Clients.Group(id.ToString()).SendAsync("ReceiveStatusChange", thumbnail.Status.ToString());
@@ -54,7 +54,7 @@ public class ThumbnailService {
                 await GenerateThumbnail(video!.FilePath, thumbnail.FilePath, thumbnail.Width, thumbnail.Height);
 
                 // Is for debugging so you can better see the state change
-                await Task.Delay(5000, stoppingToken);
+                // await Task.Delay(5000, stoppingToken);
 
                 thumbnail.Status = ThumbnailStatus.COMPLETED;
 
