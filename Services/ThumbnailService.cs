@@ -8,12 +8,14 @@ namespace VideoMaker.Services;
 public class ThumbnailService {
 
     private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<ThumbnailService> _logger;
 
     private readonly IHubContext<ThumbnailHub> _hubContext;
 
-    public ThumbnailService(IServiceProvider serviceProvider, IHubContext<ThumbnailHub> hubContext) {
+    public ThumbnailService(IServiceProvider serviceProvider, ILogger<ThumbnailService> logger, IHubContext<ThumbnailHub> hubContext) {
         _serviceProvider = serviceProvider;
         _hubContext = hubContext;
+        _logger = logger;
     }
 
     public async Task SubmitThumbnail(Guid id, CancellationToken stoppingToken) {
@@ -24,6 +26,7 @@ public class ThumbnailService {
 
             var thumbnail = await applicationContext.Thumbnails.FindAsync(id);
 
+            _logger.LogInformation("Current status: {Status}", thumbnail!.Status);
             await _hubContext.Clients.Group(id.ToString()).SendAsync("ReceiveStatusChange", thumbnail.Status.ToString());
 
             // await _hubContext.Clients.All.SendAsync("ReceiveStatusChange", $"{thumbnail.Id} {thumbnail.Status}");
@@ -33,6 +36,7 @@ public class ThumbnailService {
 
             await Task.Delay(5000, stoppingToken);
 
+            _logger.LogInformation("Current status: {Status}", thumbnail!.Status);
             await _hubContext.Clients.Group(id.ToString()).SendAsync("ReceiveStatusChange", thumbnail.Status.ToString());
 
             // await _hubContext.Clients.All.SendAsync("ReceiveStatusChange", thumbnail.Status.ToString());
@@ -55,6 +59,7 @@ public class ThumbnailService {
 
             } finally {
 
+                _logger.LogInformation("Current status: {Status}", thumbnail!.Status);
                 // await _hubContext.Clients.All.SendAsync("ReceiveStatusChange", thumbnail.Status.ToString());
                 await _hubContext.Clients.Group(id.ToString()).SendAsync("ReceiveStatusChange", thumbnail.Status.ToString());
 
