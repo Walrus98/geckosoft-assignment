@@ -28,6 +28,7 @@ public static class ApiV0 {
         _ = group.MapPost("/generate", CreateThumbnail.Handle);
         _ = group.MapGet("/", ListThumbnails.Handle);
         _ = group.MapGet("/{id}", GetThumbnail.Handle);
+        _ = group.MapGet("status/{id}", GetThumbnailStatus.Handle);
     }
 }
 
