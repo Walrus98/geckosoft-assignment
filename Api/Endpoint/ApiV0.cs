@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using VideoMaker.Handlers.Thumbnails;
 using VideoMaker.Handlers.Videos;
 using VideoMaker.Services;
@@ -20,7 +21,7 @@ public static class ApiV0 {
     }
 
     static void MapVideoEndpoints(this RouteGroupBuilder group) {
-        _ = group.MapPost("/upload", UploadVideo.Handle).DisableAntiforgery();
+        _ = group.MapPost("/upload", UploadVideo.Handle).WithMetadata(new RequestSizeLimitAttribute(1L * 1024 * 1024 * 1024)).DisableAntiforgery();
         _ = group.MapGet("/", ListVideos.Handle);
         _ = group.MapGet("/{id}", GetVideo.Handle);
     }
