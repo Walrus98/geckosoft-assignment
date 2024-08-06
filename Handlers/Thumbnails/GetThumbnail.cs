@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using VideoMaker.Database;
+using static VideoMaker.Database.Entities.Thumbnail;
 
 namespace VideoMaker.Handlers.Thumbnails;
 
@@ -17,7 +18,13 @@ public static class GetThumbnail {
             return TypedResults.NotFound();
         }
 
-        return Results.File(thumbnail.FilePath, "image/jpeg");
+        if (thumbnail.Status != ThumbnailStatus.COMPLETED) {
+            return TypedResults.Ok($"Thumbnail is processing, current status: {thumbnail.Status}");
+        }
+
+        var absoluteFilePath = Path.Combine(Directory.GetCurrentDirectory(), thumbnail.FilePath);
+
+        return Results.File(absoluteFilePath, "image/jpeg");
     }
 }
 
