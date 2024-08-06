@@ -46,7 +46,7 @@ To implement the required funcionalities, two groups of endpoints have been deve
 #### Videos
 
 - **POST** ``/v0/videos/upload``
-    used to upload a video to the application
+    used to upload a video to the application, the payload size for this endpoint has been increased up to 1GB.
 
 - **GET** ``/v0/videos/``
     used to obtain the list of uploaded videos within range specified by the following query parameters: 
