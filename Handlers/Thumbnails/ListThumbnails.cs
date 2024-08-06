@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using VideoMaker.Api;
 using VideoMaker.Database;
-using VideoMaker.Database.Entities;
 
 namespace VideoMaker.Handlers.Thumbnails;
 
@@ -15,14 +14,13 @@ public static class ListThumbnails {
 
         var totalCount = await applicationContext.Thumbnails.CountAsync();
 
-        Console.WriteLine(totalCount);
-
         var thumbnails = await applicationContext.Thumbnails
             .Skip(offset.Value)
             .Take(limit.Value)
+            .Select(x => new ThumbnailDto(x))
             .ToArrayAsync();
 
-        var response = new Page<Thumbnail>(offset.Value, limit.Value, totalCount, thumbnails);
+        var response = new Page<ThumbnailDto>(offset.Value, limit.Value, totalCount, thumbnails);
 
         return TypedResults.Ok(response);
     }
