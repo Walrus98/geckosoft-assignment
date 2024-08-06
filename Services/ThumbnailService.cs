@@ -1,37 +1,57 @@
 using System.Diagnostics;
-using VideoMaker.Database.Entities;
+using VideoMaker.Database;
+using static VideoMaker.Database.Entities.Thumbnail;
 
 namespace VideoMaker.Services;
 
 public class ThumbnailService {
 
-    private readonly string _uploadsPath;
-    private readonly string _thumbnailsPath;
+    private readonly IServiceProvider _serviceProvider;
 
-    public ThumbnailService() {
-        _uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "uploads");
-        _thumbnailsPath = Path.Combine(Directory.GetCurrentDirectory(), "thumbnails");
-
-        _ = Directory.CreateDirectory(_thumbnailsPath);
+    public ThumbnailService(IServiceProvider serviceProvider) {
+        _serviceProvider = serviceProvider;
     }
 
-    public async Task<Thumbnail> CreateThumbnailAsync(Guid videoId, int width, int height) {
+    public async Task SubmitThumbnail(Guid id, CancellationToken stoppingToken) {
 
-        var thumbnailId = Guid.NewGuid();
-        var videoPath = Path.Combine(_uploadsPath, $"{videoId}.mp4");
-        var thumbnailPath = Path.Combine(_thumbnailsPath, $"{thumbnailId}.jpg");
+        await Task.Run(async () => {
+            using var scope = _serviceProvider.CreateScope();
+            var applicationContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
-        await GenerateThumbnail(videoPath, thumbnailPath, width, height);
+            var thumbnail = await applicationContext.Thumbnails.FindAsync(id);
 
-        var thumbnail = new Thumbnail {
-            Id = thumbnailId,
-            VideoId = videoId,
-            Width = width,
-            Height = height,
-            FilePath = thumbnailPath,
-        };
+            Console.WriteLine("STATUS: " + thumbnail!.Status);
 
-        return thumbnail;
+            thumbnail.Status = ThumbnailStatus.ANALYZING;
+            _ = await applicationContext.SaveChangesAsync();
+
+            // await Task.Delay(5000, stoppingToken);
+
+            Console.WriteLine("STATUS: " + thumbnail.Status);
+
+            var video = await applicationContext.Videos.FindAsync(thumbnail.VideoId);
+
+            try {
+                await GenerateThumbnail(video!.FilePath, thumbnail.FilePath, thumbnail.Width, thumbnail.Height);
+
+                // await Task.Delay(5000, stoppingToken);
+
+                thumbnail.Status = ThumbnailStatus.COMPLETED;
+
+            } catch (Exception exception) {
+
+                Console.Error.WriteLine(exception);
+                thumbnail.Status = ThumbnailStatus.FAILED;
+
+                _ = applicationContext.Thumbnails.Remove(thumbnail);
+
+            } finally {
+
+                Console.WriteLine("STATUS: " + thumbnail.Status);
+                _ = await applicationContext.SaveChangesAsync();
+            }
+
+        }, stoppingToken);
     }
 
     private static async Task GenerateThumbnail(string videoPath, string outputPath, int width, int height) {
@@ -49,6 +69,14 @@ public class ThumbnailService {
 
         using var process = new Process { StartInfo = processStartInfo };
         _ = process.Start();
+
+        // var output = await process.StandardOutput.ReadToEndAsync();
+        var error = await process.StandardError.ReadToEndAsync();
+
         await process.WaitForExitAsync();
+
+        if (process.ExitCode != 0) {
+            throw new Exception($"ffmpeg exited with code {process.ExitCode}: {error}");
+        }
     }
 }
