@@ -56,7 +56,11 @@ public class ThumbnailService {
 
     private static async Task GenerateThumbnail(string videoPath, string outputPath, int width, int height) {
         var ffmpegPath = "ffmpeg";
-        var arguments = $"-i {videoPath} -vf scale={width}:{height} {outputPath}";
+
+        var absoluteVideoFilePath = Path.Combine(Directory.GetCurrentDirectory(), videoPath);
+        var absoluteThumbnailFilePath = Path.Combine(Directory.GetCurrentDirectory(), outputPath);
+
+        var arguments = $"-i {absoluteVideoFilePath} -vf scale={width}:{height} -frames:v 1 {absoluteThumbnailFilePath}";
 
         var processStartInfo = new ProcessStartInfo {
             FileName = ffmpegPath,
