@@ -16,6 +16,10 @@ public static class CreateThumbnail {
 
     public static async Task<IResult> Handle(CreateThumbnailRequest request, ApplicationContext applicationContext, ThumbnailService thumbnailService, CancellationToken cancellationToken) {
 
+        if (request == null) {
+            return Results.BadRequest();
+        }
+
         var video = await applicationContext.Videos.FindAsync([request.VideoId], cancellationToken: cancellationToken);
 
         if (video == null) {
