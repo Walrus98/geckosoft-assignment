@@ -19,16 +19,16 @@ var apis = new Api[] {
 
 builder.AddIdentity();
 builder.AddJwtAuthentication();
+builder.AddCorsPolicy();
 builder.AddSwagger(apis);
 
 var app = builder.Build();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseCors("AllowSpecificOrigins");
 
 app.UseAntiforgery();
-
-
 
 foreach (var api in apis) {
     var endpoint = app.MapGroup(api.Path).WithGroupName(api.Id);

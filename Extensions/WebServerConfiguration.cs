@@ -36,6 +36,19 @@ public static class WebServerConfiguration {
         _ = builder.Services.AddAuthorization();
     }
 
+
+    public static void AddCorsPolicy(this WebApplicationBuilder builder) {
+        _ = builder.Services.AddCors(options => {
+            options.AddPolicy("AllowSpecificOrigins",
+                builder => {
+                    _ = builder.WithOrigins("http://localhost:5173")
+                           .AllowAnyMethod()
+                           .AllowAnyHeader()
+                           .AllowCredentials();
+                });
+        });
+    }
+
     public static void AddSwagger(this WebApplicationBuilder builder, Api.Api[] apis) {
         foreach (var api in apis) {
             _ = builder.Services.AddEndpointsApiExplorer();
@@ -44,6 +57,5 @@ public static class WebServerConfiguration {
             });
         }
     }
-
 }
 
