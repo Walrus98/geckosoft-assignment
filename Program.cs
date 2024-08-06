@@ -8,6 +8,7 @@ using VideoMaker.Services;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationContext>(opt => opt.UseInMemoryDatabase("VideoMaker"));
 
+builder.Services.AddSignalR();
 builder.Services.AddSingleton<ThumbnailService>();
 
 builder.Services.AddAntiforgery();

@@ -1,5 +1,6 @@
 using VideoMaker.Handlers.Thumbnails;
 using VideoMaker.Handlers.Videos;
+using VideoMaker.Services;
 
 namespace VideoMaker.Api.Endpoint;
 
@@ -29,6 +30,7 @@ public static class ApiV0 {
         _ = group.MapGet("/", ListThumbnails.Handle);
         _ = group.MapGet("/{id}", GetThumbnail.Handle);
         _ = group.MapGet("status/{id}", GetThumbnailStatus.Handle);
+        _ = group.MapHub<ThumbnailHub>("/thumbnailHub");
     }
 }
 

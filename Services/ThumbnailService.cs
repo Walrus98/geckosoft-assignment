@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Microsoft.AspNetCore.SignalR;
 using VideoMaker.Database;
 using static VideoMaker.Database.Entities.Thumbnail;
 
@@ -8,8 +9,11 @@ public class ThumbnailService {
 
     private readonly IServiceProvider _serviceProvider;
 
-    public ThumbnailService(IServiceProvider serviceProvider) {
+    private readonly IHubContext<ThumbnailHub> _hubContext;
+
+    public ThumbnailService(IServiceProvider serviceProvider, IHubContext<ThumbnailHub> hubContext) {
         _serviceProvider = serviceProvider;
+        _hubContext = hubContext;
     }
 
     public async Task SubmitThumbnail(Guid id, CancellationToken stoppingToken) {
@@ -20,21 +24,25 @@ public class ThumbnailService {
 
             var thumbnail = await applicationContext.Thumbnails.FindAsync(id);
 
-            Console.WriteLine("STATUS: " + thumbnail!.Status);
+            await _hubContext.Clients.Group(id.ToString()).SendAsync("ReceiveStatusChange", thumbnail.Status.ToString());
+
+            // await _hubContext.Clients.All.SendAsync("ReceiveStatusChange", $"{thumbnail.Id} {thumbnail.Status}");
 
             thumbnail.Status = ThumbnailStatus.ANALYZING;
             _ = await applicationContext.SaveChangesAsync();
 
-            // await Task.Delay(5000, stoppingToken);
+            await Task.Delay(5000, stoppingToken);
 
-            Console.WriteLine("STATUS: " + thumbnail.Status);
+            await _hubContext.Clients.Group(id.ToString()).SendAsync("ReceiveStatusChange", thumbnail.Status.ToString());
+
+            // await _hubContext.Clients.All.SendAsync("ReceiveStatusChange", thumbnail.Status.ToString());
 
             var video = await applicationContext.Videos.FindAsync(thumbnail.VideoId);
 
             try {
                 await GenerateThumbnail(video!.FilePath, thumbnail.FilePath, thumbnail.Width, thumbnail.Height);
 
-                // await Task.Delay(5000, stoppingToken);
+                await Task.Delay(5000, stoppingToken);
 
                 thumbnail.Status = ThumbnailStatus.COMPLETED;
 
@@ -47,7 +55,9 @@ public class ThumbnailService {
 
             } finally {
 
-                Console.WriteLine("STATUS: " + thumbnail.Status);
+                // await _hubContext.Clients.All.SendAsync("ReceiveStatusChange", thumbnail.Status.ToString());
+                await _hubContext.Clients.Group(id.ToString()).SendAsync("ReceiveStatusChange", thumbnail.Status.ToString());
+
                 _ = await applicationContext.SaveChangesAsync();
             }
 
